@@ -1,80 +1,130 @@
 #include "GildedRose.h"
+#include "iostream"
 
-GildedRose::GildedRose(vector<Item> & items) : items(items)
+const int MIN_QUALITY = 0;
+const int MAX_QUALITY = 50;
+const string AG_BR = "Aged Brie";
+const string SULFURAS = "Sulfuras, Hand of Ragnaros";
+const string BACKST_PS = "Backstage passes to a TAFKAL80ETC concert";
+const string CONJURED = "Conjured Mana Cake";
+
+
+GildedRose::GildedRose(vector<Item>& items) : items(items)
 {}
-    
-void GildedRose::updateQuality() 
+
+GildedRose::ItemType GildedRose::getItemTypeByName(const string& name)
 {
-    for (int i = 0; i < items.size(); i++)
+    if (name == AG_BR) {
+        return ITEM_AGED_BRIE;
+    }
+    else if (name == SULFURAS) {
+        return ITEM_SULFURAS;
+    }
+    else if (name == BACKST_PS) {
+        return ITEM_BACKSTAGE_PASSES;
+    }
+    else if (name == CONJURED) {
+        return ITEM_CONJURED;
+    }
+    else {
+        return ITEM_NORMAL;
+    }
+}
+
+void GildedRose::updateQualityAgedBrie(int index)
+{
+    if (items[index].quality < MAX_QUALITY)
     {
-        if (items[i].name != "Aged Brie" && items[i].name != "Backstage passes to a TAFKAL80ETC concert")
+        items[index].quality += 1;
+    }
+    items[index].sellIn--;
+    if (items[index].sellIn < 0 && items[index].quality< MAX_QUALITY)
+    {
+        items[index].quality += 1;
+    }
+}
+
+void GildedRose::updateQualityBackstagePasses(int index)
+{
+    if (items[index].quality < MAX_QUALITY)
+    {
+        items[index].quality += 1;
+
+        if (items[index].sellIn <= 10 && items[index].quality < MAX_QUALITY)
         {
-            if (items[i].quality > 0)
-            {
-                if (items[i].name != "Sulfuras, Hand of Ragnaros")
-                {
-                    items[i].quality = items[i].quality - 1;
-                }
-            }
+            items[index].quality += 1;
         }
-        else
+        if (items[index].sellIn <= 5 && items[index].quality < MAX_QUALITY)
         {
-            if (items[i].quality < 50)
-            {
-                items[i].quality = items[i].quality + 1;
-
-                if (items[i].name == "Backstage passes to a TAFKAL80ETC concert")
-                {
-                    if (items[i].sellIn < 11)
-                    {
-                        if (items[i].quality < 50)
-                        {
-                            items[i].quality = items[i].quality + 1;
-                        }
-                    }
-
-                    if (items[i].sellIn < 6)
-                    {
-                        if (items[i].quality < 50)
-                        {
-                            items[i].quality = items[i].quality + 1;
-                        }
-                    }
-                }
-            }
+            items[index].quality += 1;
         }
+    }
+    items[index].sellIn--;
+    if (items[index].sellIn < 0)
+    {
+        items[index].quality = 0;
+    }
+    
+}
 
-        if (items[i].name != "Sulfuras, Hand of Ragnaros")
-        {
-            items[i].sellIn = items[i].sellIn - 1;
-        }
+void GildedRose::updateQualitySulfuras(int index)
+{
+}
 
-        if (items[i].sellIn < 0)
+void GildedRose::updateQualityConjured(int index)
+{
+    if (items[index].quality > MIN_QUALITY)
+    {
+        items[index].quality -= 2;
+    }
+    items[index].sellIn--;
+    if (items[index].sellIn < 0 && items[index].quality>MIN_QUALITY)
+    {
+        items[index].quality -= 2;
+    }
+    if (items[index].quality < MIN_QUALITY)
+    {
+        items[index].quality = 0;
+    }
+}
+
+void GildedRose::updateQualityNormal(int index)
+{
+    if (items[index].quality > MIN_QUALITY)
+    {
+        items[index].quality -= 1;
+       
+    }
+    items[index].sellIn--;
+    if (items[index].sellIn < 0 && items[index].quality>MIN_QUALITY)
+    {
+        items[index].quality -= 1;
+    }
+}
+
+void GildedRose::updateQuality()
+{
+    for (int itemIndex = 0; itemIndex < items.size(); itemIndex++)
+    {
+        ItemType itemType = getItemTypeByName(items[itemIndex].name);
+        switch (itemType) 
         {
-            if (items[i].name != "Aged Brie")
-            {
-                if (items[i].name != "Backstage passes to a TAFKAL80ETC concert")
-                {
-                    if (items[i].quality > 0)
-                    {
-                        if (items[i].name != "Sulfuras, Hand of Ragnaros")
-                        {
-                            items[i].quality = items[i].quality - 1;
-                        }
-                    }
-                }
-                else
-                {
-                    items[i].quality = items[i].quality - items[i].quality;
-                }
-            }
-            else
-            {
-                if (items[i].quality < 50)
-                {
-                    items[i].quality = items[i].quality + 1;
-                }
-            }
+        case ITEM_AGED_BRIE:
+            updateQualityAgedBrie(itemIndex);
+            break;
+        case ITEM_SULFURAS:
+            updateQualitySulfuras(itemIndex);
+            break;
+        case ITEM_BACKSTAGE_PASSES:
+            updateQualityBackstagePasses(itemIndex);
+            break;
+        case ITEM_CONJURED:
+            updateQualityConjured(itemIndex);
+            break;
+        case ITEM_NORMAL:
+            updateQualityNormal(itemIndex);
+            break;
         }
     }
 }
+
